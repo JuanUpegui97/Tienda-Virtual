@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyd
+.venv/
+env/
+
+# Node.js
+node_modules/
+package-lock.json
+
+# React
+frontend_react/node_modules/
+frontend_react/build/
+
+# Otros
+.env
+*.log
+*.swp
+.DS_Store

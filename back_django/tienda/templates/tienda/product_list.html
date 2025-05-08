@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de Productos</title>
+</head>
+<body>
+    <h1>Productos</h1>
+
+    {% if category %}
+        <h2>Categoría: {{ category.name }}</h2>
+    {% endif %}
+
+    <ul>
+        {% for product in products %}
+        <li>
+            <a href="{% url 'tienda:product_detail' product.id %}">{{ product.name }}</a> - ${{ product.price }}
+        </li>
+        {% empty %}
+        <li>No hay productos disponibles en esta categoría.</li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="{% url 'tienda:product_list' %}">Ver todos los productos</a></p>
+</body>
+</html>
