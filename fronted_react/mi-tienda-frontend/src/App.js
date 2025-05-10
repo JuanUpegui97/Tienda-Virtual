@@ -1,107 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import RegistroPage from './pages/RegistroPage';
+import LoginPage from './pages/LoginPage';
+import ListaCategorias from './components/auth/ListaCategorias';
+import ListaProductos from './components/auth/ListaProductos';
 
-function RegistroUsuario() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [password2, setPassword2] = useState('');
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    setIsLoggedIn(!!token);
+    console.log('Estado isLoggedIn al cargar o cambiar ruta:', isLoggedIn, location.pathname);
+  }, [location]);
 
-    if (password !== password2) {
-      setError('Las contraseñas no coinciden.');
-      setSuccessMessage('');
-      return;
-    }
-
-    const userData = {
-      username: username,
-      email: email,
-      password: password,
-      password2: password2,
-    };
-
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/register/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccessMessage('Usuario creado exitosamente.');
-        setError('');
-        setUsername('');
-        setEmail('');
-        setPassword('');
-        setPassword2('');
-      } else {
-        setError(JSON.stringify(data));
-        setSuccessMessage('');
-      }
-    } catch (error) {
-      setError('Error al conectar con el servidor.');
-      setSuccessMessage('');
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    setIsLoggedIn(false);
+    navigate('/login');
+    console.log('Estado isLoggedIn después de logout:', isLoggedIn);
   };
 
   return (
     <div>
-      <h2>Registro de Nuevo Usuario</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Nombre de Usuario:</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="email">Correo Electrónico:</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Contraseña:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="password2">Confirmar Contraseña:</label>
-          <input
-            type="password"
-            id="password2"
-            value={password2}
-            onChange={(e) => setPassword2(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Registrarse</button>
-      </form>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/">Inicio</Link>
+          </li>
+          {!isLoggedIn && (
+            <>
+              <li>
+                <Link to="/register">Registrarse</Link>
+              </li>
+              <li>
+                <Link to="/login">Iniciar Sesión</Link>
+              </li>
+            </>
+          )}
+          {isLoggedIn && (
+            <li>
+              <button onClick={handleLogout}>Cerrar Sesión</button>
+            </li>
+          )}
+        </ul>
+      </nav>
+
+      <Routes>
+        <Route path="/register" element={<RegistroPage />} />
+        <Route path="/login" element={<LoginPage onLogin={setIsLoggedIn} />} /> {/* Pasa setIsLoggedIn como prop */}
+        <Route path="/" element={
+          <div>
+            <h1>Bienvenido a mi Tienda Virtual</h1>
+            {isLoggedIn && (
+              <>
+                <ListaCategorias />
+                <ListaProductos />
+              </>
+            )}
+            {!isLoggedIn && <p>Por favor, inicia sesión para ver las categorías y productos.</p>}
+          </div>
+        } />
+      </Routes>
     </div>
   );
 }
 
-export default RegistroUsuario;
+export default App;
